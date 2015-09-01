@@ -10,7 +10,7 @@ Using [composer](http://getcomposer.org).
 composer require gintonicweb/multiselect:dev-master
 ```
 
-And load the plugin in ```bootstrap.php``` like:
+Load the plugin in ```bootstrap.php``` like:
 
 ```
 Plugin::load('Multiselect');
@@ -20,13 +20,13 @@ Plugin::load('Multiselect');
 
 ### Example 1
 
-A single song can be playing. Whenever a song is marked as playing, all of 
-the other songs are marked as not playing.
+In a playlist, a single song can be play at the time. Whenever a song is marked
+as playing, all of the other songs are marked as not playing.
 
 ```
-CREATE table song(
+CREATE table songs(
     id int(10) unsigned NOT NULL auto_increment,
-    name varchar(255) NOT NULL,
+    title varchar(255) NOT NULL,
     playing tinyint(1) NOT NULL,
 );
 ```
@@ -34,7 +34,7 @@ CREATE table song(
 Load the behavior in your model ```SongsTable.php```:
 
 ```
-$this->addBehavior('Multiselect', ['field' => 'playing']);
+$this->addBehavior('Multiselect.Multiselect', ['field' => 'playing']);
 ```
 
 The field must be a boolean.
@@ -54,10 +54,10 @@ CREATE table articles (
 );
 ```
 
-We load the behavior in ```ArticlesTable.php```:
+Load the behavior in ```ArticlesTable.php```:
 
 ```
-$this->addBehavior('Multiselect', [
+$this->addBehavior('Multiselect.Multiselect', [
     'field' => 'featured',
     'limit' => 3,
     'matchingFields' => ['author_id'],
@@ -67,29 +67,29 @@ $this->addBehavior('Multiselect', [
 ]);
 ```
 
-When the same author marks a fourth article as featured, the article that we
-have modified the least-recently will loose it's 'featured' status.
+When the same author marks a fourth article as featured, one other article must 
+be un-fetured. In this case we choose the the least-recently modified.
 
 ### Config options
 
 
 ```
-$this->addBehavior('Multiselect', [
+$this->addBehavior('Multiselect.Multiselect', [
 
     // The field that is used as a select, must be a boolean
     'field' => 'featured',
 
-    // The active field is marked as true and the inactive fields as false
-    // you can do the opposite by making this option false
+    // By default, the active field is marked as true and the inactive fields as 
+    // are marked false. Make it the opposite by setting this option to false
     'state' => true, 
 
-    // If you want the selects to be restricted to sub-groups of your talbe,
+    // If you want the selects to be restricted to sub-groups within your talbe,
     // use this field to mark the grouping fields
     'matchingFields' => ['author_id'],
 
-    // If you want to allow more than one option to be selected at the time,
-    // then you also need to define the order in which to unselect them when
-    // we reach the maximum limit of selected fields
+    // You can allow more than one option to be selected simultaneously,
+    // then you also need to define the order in which we unselect the items when
+    // the maximum limit of selected items is reached.
     'limit' => 2,
     'order' => [
         'approved' => 'ASC',
