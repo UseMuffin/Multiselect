@@ -53,6 +53,9 @@ class MultiselectBehavior extends Behavior
         if ($count < $config['limit']) {
             return;
         }
+        if ($entity->get($config['field']) !== $config['state']) {
+            return;
+        }
 
         $this->unselect($count, $conditions);
     }
