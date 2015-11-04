@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/gintonicweb/multiselect.svg)](https://travis-ci.org/gintonicweb/multiselect)
+[![Coverage Status](https://coveralls.io/repos/gintonicweb/multiselect/badge.svg?branch=master&service=github)](https://coveralls.io/github/gintonicweb/multiselect?branch=master)
+[![Packagist](https://img.shields.io/packagist/dt/gintonicweb/multiselect.svg)]()
+[![Software License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 # Multiselect plugin for CakePHP
 
 Toggle, select or multiselect a database field based on a set of conditions
