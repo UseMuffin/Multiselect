@@ -27,6 +27,16 @@ class MultiselectBehavior extends Behavior
         'matchingFields' => [],
     ];
 
+    /**
+     * Constructor
+     *
+     * The default class constructor is only overrided because this behavior
+     * relies on the order in the config array to stay the same. This is why
+     * configShallow is used.
+     *
+     * @param \Cake\ORM\Table $table The table this behavior is attached to.
+     * @param array $config The config for this behavior.
+     */
     public function __construct(Table $table, array $config = [])
     {
         $config = $this->_resolveMethodAliases(
@@ -44,6 +54,13 @@ class MultiselectBehavior extends Behavior
         $this->initialize($config);
     }
 
+    /**
+     * BeforeSave
+     *
+     * @param \Cake\Event\Event $event Event instance.
+     * @param \Cake\Datasource\EntityInterface $entity Entity instance.
+     * @return true (irrespective of the behavior logic, the save will not be prevented)
+     */
     public function beforeSave(Event $event, Entity $entity)
     {
         $conditions = $this->getConditions($entity);
@@ -51,15 +68,22 @@ class MultiselectBehavior extends Behavior
 
         $config = $this->config();
         if ($count < $config['limit']) {
-            return;
+            return true;
         }
         if ($entity->get($config['field']) !== $config['state']) {
-            return;
+            return true;
         }
 
         $this->unselect($count, $conditions);
+        return true;
     }
 
+    /**
+     * Find the number of entries matching the given expression
+     *
+     * @param array $conditions ORM conditions to be used
+     * @return int
+     */
     public function getCount($conditions)
     {
         return $this->_table->find()
@@ -67,6 +91,12 @@ class MultiselectBehavior extends Behavior
             ->count();
     }
 
+    /**
+     * Find the number of entries matching the given expression
+     *
+     * @param \Cake\ORM\Entity $entity the entity to match conditions against
+     * @return array
+     */
     public function getConditions(Entity $entity)
     {
         $config = $this->config();
@@ -79,6 +109,14 @@ class MultiselectBehavior extends Behavior
         return $conditions;
     }
 
+    /**
+     * Set the 'select' field to unselect for the entries
+     * that can't be active.
+     *
+     * @param int $count The number of currently selected elements
+     * @param array $conditions ORM conditions to be used
+     * @return void
+     */
     public function unselect($count, $conditions)
     {
         $config = $this->config();
