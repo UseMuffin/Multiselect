@@ -12,7 +12,7 @@ Toggle, select or multiselect a database field based on a set of conditions
 Using [composer](http://getcomposer.org).
 
 ```
-composer require gintonicweb/multiselect:dev-master
+composer require gintonicweb/multiselect:~0.0
 ```
 
 Load the plugin in ```bootstrap.php``` like:
