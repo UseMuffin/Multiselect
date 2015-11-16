@@ -90,7 +90,7 @@ $this->addBehavior('Multiselect.Multiselect', [
 
     // If you want the selects to be restricted to sub-groups within your talbe,
     // use this field to mark the grouping fields
-    'matchingFields' => ['author_id'],
+    'scope' => ['author_id'],
 
     // You can allow more than one option to be selected simultaneously,
     // then you also need to define the order in which we unselect the items when

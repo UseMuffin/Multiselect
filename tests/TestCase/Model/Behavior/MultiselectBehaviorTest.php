@@ -14,11 +14,7 @@ class MultiselectBehaviorTest extends TestCase
     public $fixtures = [
         'plugin.Multiselect.Articles',
     ];
-    /**
-     * setUp method
-     *
-     * @return void
-     */
+
     public function setUp()
     {
         parent::setUp();
@@ -26,6 +22,7 @@ class MultiselectBehaviorTest extends TestCase
         $this->Articles->addBehavior('Multiselect.Multiselect', [
             'field' => 'featured',
             'limit' => 2,
+            'scope' => ['author_id'],
             'order' => [
                 'approved' => 'ASC',
                 'published' => 'ASC',
@@ -34,31 +31,75 @@ class MultiselectBehaviorTest extends TestCase
         $this->Behavior = $this->Articles->behaviors()->Multiselect;
     }
 
-    /**
-     * tearDown method
-     *
-     * @return void
-     */
     public function tearDown()
     {
         unset($this->Multiselect);
         parent::tearDown();
     }
 
-    /**
-     * Test beforeSave method
-     *
-     * @return void
-     */
-    public function testBeforeSave()
+    public function testUnselectedSave()
     {
+        $data = [
+            'featured' => false,
+            'approved' => true,
+            'author_id' => 1,
+            'published' => '2015-09-03 00:00:00',
+        ];
+        $article = $this->Articles->newEntity($data);
+        $this->Articles->save($article);
+
         $result = $this->Articles
             ->find('list', ['valuefield' => 'id'])
-            ->where(['featured' => true])
+            ->where(['featured' => true, 'author_id' => 1])
             ->toarray();
 
-        $expected = [1 => 1, 2 => 2];
+        $expected = [1 => 1, 5 => 5];
         $this->assertequals($expected, $result);
+    }
+
+    public function testSelectedSave()
+    {
+        $data = [
+            'featured' => true,
+            'approved' => true,
+            'author_id' => 1,
+            'published' => '2015-09-03 00:00:00',
+        ];
+        $article = $this->Articles->newEntity($data);
+        $this->Articles->save($article);
+
+        $result = $this->Articles
+            ->find('list', ['valuefield' => 'id'])
+            ->where(['featured' => true, 'author_id' => 1])
+            ->toarray();
+
+        $expected = [5 => 5, 6 => 6];
+        $this->assertequals($expected, $result);
+    }
+
+    public function testCount()
+    {
+        $count = $this->Articles->find()->where(['featured' => true, 'author_id' => 1])->count();
+        $this->assertequals($count, 2);
+
+        $article = $this->Articles->get(2);
+        $article->featured = true;
+        $this->Articles->save($article);
+        $count = $this->Articles->find()->where(['featured' => true, 'author_id' => 1])->count();
+        $this->assertequals($count, 2);
+
+        $article = $this->Articles->get(3);
+        $article->featured = true;
+        $this->Articles->save($article);
+        $count = $this->Articles->find()->where(['featured' => true, 'author_id' => 1])->count();
+        $this->assertequals($count, 2);
+    }
+
+    public function testOrder()
+    {
+        $article = $this->Articles->get(4);
+        $article->approved = false;
+        $this->Articles->save($article);
 
         $data = [
             'featured' => true,
@@ -70,40 +111,10 @@ class MultiselectBehaviorTest extends TestCase
 
         $result = $this->Articles
             ->find('list', ['valuefield' => 'id'])
-            ->where(['featured' => true])
+            ->where(['featured' => true, 'author_id' => 1])
             ->toarray();
 
-        $expected = [4 => 4, 1 => 1];
+        $expected = [1 => 1, 5 => 5];
         $this->assertequals($expected, $result);
-    }
-
-    /**
-     * Test getCount method
-     *
-     * @return void
-     */
-    public function testGetCount()
-    {
-        $this->markTestIncomplete('Not implemented yet.');
-    }
-
-    /**
-     * Test getConditions method
-     *
-     * @return void
-     */
-    public function testGetConditions()
-    {
-        $this->markTestIncomplete('Not implemented yet.');
-    }
-
-    /**
-     * Test unselect method
-     *
-     * @return void
-     */
-    public function testUnselect()
-    {
-        $this->markTestIncomplete('Not implemented yet.');
     }
 }
