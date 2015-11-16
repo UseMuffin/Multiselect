@@ -63,11 +63,12 @@ Load the behavior in ```ArticlesTable.php```:
 
 ```
 $this->addBehavior('Multiselect.Multiselect', [
-    'field' => 'featured',
-    'limit' => 3,
-    'matchingFields' => ['author_id'],
-    'order' => [ 
-        'modified' => 'ASC',
+    'featured' => [
+        'limit' => 3,
+        'matchingFields' => ['author_id'],
+        'order' => [ 
+            'modified' => 'ASC',
+        ],
     ],
 ]);
 ```
@@ -82,23 +83,24 @@ be un-fetured. In this case we choose the the least-recently modified.
 $this->addBehavior('Multiselect.Multiselect', [
 
     // The field that is used as a select, must be a boolean
-    'field' => 'featured',
+    'featured' => [
 
-    // By default, the active field is marked as true and the inactive fields as 
-    // are marked false. Make it the opposite by setting this option to false
-    'state' => true, 
+        // By default, the active field is marked as true and the inactive fields as 
+        // are marked false. Make it the opposite by setting this option to false
+        'state' => true, 
 
-    // If you want the selects to be restricted to sub-groups within your talbe,
-    // use this field to mark the grouping fields
-    'scope' => ['author_id'],
+        // If you want the selects to be restricted to sub-groups within your talbe,
+        // use this field to mark the grouping fields
+        'scope' => ['author_id'],
 
-    // You can allow more than one option to be selected simultaneously,
-    // then you also need to define the order in which we unselect the items when
-    // the maximum limit of selected items is reached.
-    'limit' => 2,
-    'order' => [
-        'approved' => 'ASC',
-        'modified' => 'ASC',
+        // You can allow more than one option to be selected simultaneously,
+        // then you also need to define the order in which we unselect the items when
+        // the maximum limit of selected items is reached.
+        'limit' => 2,
+        'order' => [
+            'approved' => 'ASC',
+            'modified' => 'ASC',
+        ],
     ],
 ]);
 ```

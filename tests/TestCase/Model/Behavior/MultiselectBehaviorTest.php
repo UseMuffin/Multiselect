@@ -20,12 +20,13 @@ class MultiselectBehaviorTest extends TestCase
         parent::setUp();
         $this->Articles = TableRegistry::get('Multiselect.Articles');
         $this->Articles->addBehavior('Multiselect.Multiselect', [
-            'field' => 'featured',
-            'limit' => 2,
-            'scope' => ['author_id'],
-            'order' => [
-                'approved' => 'ASC',
-                'published' => 'ASC',
+            'featured' => [
+                'limit' => 2,
+                'scope' => ['author_id'],
+                'order' => [
+                    'approved' => 'ASC',
+                    'published' => 'ASC',
+                ],
             ],
         ]);
         $this->Behavior = $this->Articles->behaviors()->Multiselect;
@@ -33,7 +34,7 @@ class MultiselectBehaviorTest extends TestCase
 
     public function tearDown()
     {
-        unset($this->Multiselect);
+        $this->Articles->removeBehavior('Multiselect');
         parent::tearDown();
     }
 
@@ -95,7 +96,7 @@ class MultiselectBehaviorTest extends TestCase
         $this->assertequals($count, 2);
     }
 
-    public function testOrder()
+    public function testScope()
     {
         $article = $this->Articles->get(4);
         $article->approved = false;
@@ -104,6 +105,32 @@ class MultiselectBehaviorTest extends TestCase
         $data = [
             'featured' => true,
             'approved' => true,
+            'author_id' => 1,
+            'published' => '2015-09-03 00:00:00',
+        ];
+        $article = $this->Articles->newEntity($data);
+        $this->Articles->save($article);
+
+
+        $result = $this->Articles
+            ->find('list', ['valuefield' => 'id'])
+            ->where(['featured' => true, 'author_id' => 1])
+            ->toarray();
+
+        $expected = [5 => 5, 6 => 6];
+        $this->assertequals($expected, $result);
+    }
+
+    public function testOrder()
+    {
+        $article = $this->Articles->get(5);
+        $article->approved = false;
+        $this->Articles->save($article);
+
+        $data = [
+            'featured' => true,
+            'approved' => true,
+            'author_id' => 1,
             'published' => '2015-09-03 00:00:00',
         ];
         $article = $this->Articles->newEntity($data);
@@ -114,7 +141,7 @@ class MultiselectBehaviorTest extends TestCase
             ->where(['featured' => true, 'author_id' => 1])
             ->toarray();
 
-        $expected = [1 => 1, 5 => 5];
+        $expected = [1 => 1, 6 => 6];
         $this->assertequals($expected, $result);
     }
 }

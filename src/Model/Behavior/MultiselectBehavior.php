@@ -13,20 +13,17 @@ use Cake\Utility\Hash;
  */
 class MultiselectBehavior extends Behavior
 {
-
     /**
      * Default configuration.
      *
      * @var array
      */
-    protected $_defaultConfig = [
+    protected $_fieldConfig = [
         'state' => true,
-        'field' => null,
         'limit' => 1,
         'order' => ['modified' => 'ASC'],
         'scope' => [],
     ];
-
     /**
      * Constructor
      *
@@ -39,6 +36,9 @@ class MultiselectBehavior extends Behavior
      */
     public function __construct(Table $table, array $config = [])
     {
+        foreach ($config as $field => $fieldConfig) {
+            $config[$field] = array_merge($this->_fieldConfig, $fieldConfig);
+        }
         $config = $this->_resolveMethodAliases(
             'implementedFinders',
             $this->_defaultConfig,
@@ -63,18 +63,18 @@ class MultiselectBehavior extends Behavior
      */
     public function beforeSave(Event $event, Entity $entity)
     {
-        $conditions = $this->getConditions($entity);
-        $count = $this->getCount($conditions, $entity);
-
-        $config = $this->config();
-        if ($count < $config['limit']) {
-            return true;
+        $fields = $this->config();
+        foreach ($fields as $field => $config) {
+            $conditions = $this->getConditions($entity, $field, $config);
+            $count = $this->getCount($conditions, $entity);
+            if ($count < $config['limit']) {
+                continue;
+            }
+            if ($entity->get($field) !== $config['state']) {
+                continue;
+            }
+            $this->unselect($count, $conditions, $field, $config);
         }
-        if ($entity->get($config['field']) !== $config['state']) {
-            return true;
-        }
-
-        $this->unselect($count, $conditions);
         return true;
     }
 
@@ -102,12 +102,13 @@ class MultiselectBehavior extends Behavior
      * Find the number of entries matching the given expression
      *
      * @param \Cake\ORM\Entity $entity the entity to match conditions against
+     * @param string $field name of the field to be configured
+     * @param array $config config array for the specified field
      * @return array
      */
-    public function getConditions(Entity $entity)
+    public function getConditions(Entity $entity, $field, $config)
     {
-        $config = $this->config();
-        $conditions = [$config['field'] => $config['state']];
+        $conditions = [$field => $config['state']];
         foreach ($config['scope'] as $field) {
             $conditions = array_merge($conditions, [
                 $field => $entity->get($field)
@@ -117,16 +118,16 @@ class MultiselectBehavior extends Behavior
     }
 
     /**
-     * Set the 'select' field to unselect for the entries
-     * that can't be active.
+     * Unselects the rows that exceed the limit
      *
      * @param int $count The number of currently selected elements
      * @param array $conditions ORM conditions to be used
+     * @param string $field name of the field to be configured
+     * @param array $config config array for the specified field
      * @return void
      */
-    public function unselect($count, $conditions)
+    public function unselect($count, $conditions, $field, $config)
     {
-        $config = $this->config();
         $trimmedRows = $this->_table->find()
             ->select([$this->_table->primaryKey()])
             ->where($conditions)
@@ -136,7 +137,7 @@ class MultiselectBehavior extends Behavior
 
         $ids = Hash::extract($trimmedRows->toArray(), '{n}.' . $this->_table->primaryKey());
         $this->_table->query()->update()
-            ->set([$config['field'] => !$config['state']])
+            ->set([$field => !$config['state']])
             ->where([$this->_table->primaryKey() . ' IN' => $ids])
             ->execute();
     }
