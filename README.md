@@ -39,7 +39,7 @@ CREATE table songs(
 Load the behavior in your model ```SongsTable.php```:
 
 ```
-$this->addBehavior('Multiselect.Multiselect', ['field' => 'playing']);
+$this->addBehavior('Multiselect.Multiselect', ['playing']);
 ```
 
 The field must be a boolean.

@@ -21,9 +21,10 @@ class MultiselectBehavior extends Behavior
     protected $_fieldConfig = [
         'state' => true,
         'limit' => 1,
-        'order' => ['modified' => 'ASC'],
+        'order' => [],
         'scope' => [],
     ];
+
     /**
      * Constructor
      *
@@ -37,6 +38,11 @@ class MultiselectBehavior extends Behavior
     public function __construct(Table $table, array $config = [])
     {
         foreach ($config as $field => $fieldConfig) {
+            if (is_string($fieldConfig)) {
+                unset($config[$field]);
+                $field = $fieldConfig;
+                $fieldConfig = [];
+            }
             $config[$field] = array_merge($this->_fieldConfig, $fieldConfig);
         }
         $config = $this->_resolveMethodAliases(
@@ -65,22 +71,25 @@ class MultiselectBehavior extends Behavior
     {
         $fields = $this->config();
         foreach ($fields as $field => $config) {
-            $conditions = $this->getConditions($entity, $field, $config);
-            $count = $this->getCount($conditions, $entity);
-            if ($count < $config['limit']) {
-                continue;
-            }
+
             if ($entity->get($field) !== $config['state']) {
                 continue;
             }
+
+            $conditions = $this->getConditions($entity, $field, $config);
+            $count = $this->getCount($conditions, $entity);
+
+            if ($count < $config['limit']) {
+                continue;
+            }
+
             $this->unselect($count, $conditions, $field, $config);
         }
         return true;
     }
 
     /**
-     * Find the number of entries matching the given expression
-     * We don't want to take into account the currently saved record
+     * Find the number of selected entries excluding currently saved entity
      *
      * @param array $conditions ORM conditions to be used
      * @param \Cake\ORM\Entity $entity the entity to be saved
@@ -88,18 +97,16 @@ class MultiselectBehavior extends Behavior
      */
     public function getCount(array $conditions, Entity $entity)
     {
-        if (!$entity->isNew()) {
-            $primaryKey = $this->_table->schema()->primaryKey();
-            $primaryKey = is_string($primaryKey) ?: $primaryKey[0];
-            $conditions[$primaryKey . ' NOT IN'] = $entity->get($primaryKey);
-        }
-        return $this->_table->find()
+        $count = $this->_table->find()
             ->where($conditions)
             ->count();
+
+        return $count;
     }
 
     /**
-     * Find the number of entries matching the given expression
+     * Find the number of entries matching the given expression excluding
+     * current entity
      *
      * @param \Cake\ORM\Entity $entity the entity to match conditions against
      * @param string $field name of the field to be configured
@@ -113,6 +120,11 @@ class MultiselectBehavior extends Behavior
             $conditions = array_merge($conditions, [
                 $field => $entity->get($field)
             ]);
+        }
+        if (!$entity->isNew()) {
+            $primaryKey = $this->_table->schema()->primaryKey();
+            $primaryKey = is_string($primaryKey) ?: $primaryKey[0];
+            $conditions[$primaryKey . ' NOT IN'] = $entity->get($primaryKey);
         }
         return $conditions;
     }

@@ -50,14 +50,18 @@ class MultiselectBehaviorTest extends TestCase
         $this->Articles->save($article);
 
         $result = $this->Articles
-            ->find('list', ['valuefield' => 'id'])
+            ->find()
             ->where(['featured' => true, 'author_id' => 1])
+            ->extract('id')
             ->toarray();
 
-        $expected = [1 => 1, 5 => 5];
+        $expected = [1, 5];
         $this->assertequals($expected, $result);
     }
 
+    /**
+     * 1 and 5 are selected, insert new selected record
+     */
     public function testSelectedSave()
     {
         $data = [
@@ -70,11 +74,12 @@ class MultiselectBehaviorTest extends TestCase
         $this->Articles->save($article);
 
         $result = $this->Articles
-            ->find('list', ['valuefield' => 'id'])
+            ->find()
             ->where(['featured' => true, 'author_id' => 1])
+            ->extract('id')
             ->toarray();
 
-        $expected = [5 => 5, 6 => 6];
+        $expected = [5, 9];
         $this->assertequals($expected, $result);
     }
 
@@ -113,14 +118,19 @@ class MultiselectBehaviorTest extends TestCase
 
 
         $result = $this->Articles
-            ->find('list', ['valuefield' => 'id'])
+            ->find()
             ->where(['featured' => true, 'author_id' => 1])
+            ->extract('id')
             ->toarray();
 
-        $expected = [5 => 5, 6 => 6];
+        $expected = [5, 9];
         $this->assertequals($expected, $result);
     }
 
+    /**
+     * Articles 1 and 5 featured
+     * Change article 5 for unapproved so that it's the first to be unselected
+     */
     public function testOrder()
     {
         $article = $this->Articles->get(5);
@@ -137,11 +147,28 @@ class MultiselectBehaviorTest extends TestCase
         $this->Articles->save($article);
 
         $result = $this->Articles
-            ->find('list', ['valuefield' => 'id'])
+            ->find()
             ->where(['featured' => true, 'author_id' => 1])
+            ->extract('id')
             ->toarray();
 
-        $expected = [1 => 1, 6 => 6];
+        $expected = [1, 9];
+        $this->assertequals($expected, $result);
+    }
+
+    public function testCorrection()
+    {
+        $article = $this->Articles->get(6);
+        $article->dirty('id', true);
+        $this->Articles->save($article);
+
+        $result = $this->Articles
+            ->find()
+            ->where(['featured' => true, 'author_id' => 3])
+            ->extract('id')
+            ->toarray();
+
+        $expected = [6, 8];
         $this->assertequals($expected, $result);
     }
 }
