@@ -1,0 +1,49 @@
+{
+    "name": "muffin/multiselect",
+    "description": "Toggle, select or multiselect a database field based on a set of conditions",
+    "type": "cakephp-plugin",
+    "keywords": [
+        "cakephp",
+        "muffin",
+        "multiselect"
+    ],
+    "homepage": "https://github.com/usemuffin/multiselect",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Philippe Lafrance",
+            "homepage": "http://phillafrance.com",
+            "role": "Author"
+        },
+        {
+            "name": "Others",
+            "homepage": "https://github.com/usemuffin/multiselect/graphs/contributors"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/usemuffin/multiselect/issues",
+        "source": "https://github.com/usemuffin/multiselect"
+    },
+    "require": {
+        "cakephp/cakephp-codesniffer": "^2.0"
+    },
+    "require-dev": {
+        "cakephp/cakephp": "~3.0",
+        "phpunit/phpunit": "~4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Muffin\\Multiselect\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Muffin\\Multiselect\\Test\\": "tests"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
